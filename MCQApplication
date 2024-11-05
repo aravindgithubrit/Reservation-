@@ -1,0 +1,161 @@
+import java.awt.*;
+import java.util.Timer;
+import java.util.TimerTask;
+import javax.swing.*;
+
+public class Main {
+
+    private static JFrame frame;
+    private static JPanel panel;
+    private static CardLayout cardLayout;
+    private static String currentUser = "";
+    private static Timer timer;
+    private static int timeLimit = 60000; // 1-minute timer for the quiz
+
+    public static void main(String[] args) {
+        frame = new JFrame("MCQ Quiz Application");
+        cardLayout = new CardLayout();
+        panel = new JPanel(cardLayout);
+
+        // Setup initial screen (Login)
+        setupLoginScreen();
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+
+    // Login screen setup
+    private static void setupLoginScreen() {
+        JPanel loginPanel = new JPanel();
+        loginPanel.setLayout(new GridLayout(3, 2));
+
+        JTextField usernameField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+
+        JButton loginButton = new JButton("Login");
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            if (username.equals("user") && password.equals("password")) {
+                currentUser = username;
+                cardLayout.show(panel, "Quiz");
+                startQuiz();
+            } else {
+                JOptionPane.showMessageDialog(frame, "Invalid credentials");
+            }
+        });
+
+        loginPanel.add(new JLabel("Username:"));
+        loginPanel.add(usernameField);
+        loginPanel.add(new JLabel("Password:"));
+        loginPanel.add(passwordField);
+        loginPanel.add(loginButton);
+
+        panel.add(loginPanel, "Login");
+    }
+
+    // Setup profile update screen
+    private static void setupProfileUpdateScreen() {
+        JPanel profilePanel = new JPanel();
+        profilePanel.setLayout(new GridLayout(3, 2));
+
+        JTextField usernameField = new JTextField(currentUser);
+        JPasswordField passwordField = new JPasswordField();
+
+        JButton updateButton = new JButton("Update");
+        updateButton.addActionListener(e -> {
+            String newPassword = new String(passwordField.getPassword());
+            // Simulate updating the password
+            JOptionPane.showMessageDialog(frame, "Profile updated successfully!");
+            // You could add actual password update logic here
+        });
+
+        profilePanel.add(new JLabel("Username:"));
+        profilePanel.add(usernameField);
+        profilePanel.add(new JLabel("New Password:"));
+        profilePanel.add(passwordField);
+        profilePanel.add(updateButton);
+
+        panel.add(profilePanel, "Profile");
+    }
+
+    // Setup MCQ quiz screen
+    private static void setupQuizScreen() {
+        JPanel quizPanel = new JPanel();
+        quizPanel.setLayout(new BoxLayout(quizPanel, BoxLayout.Y_AXIS));
+
+        // Sample MCQs
+        String[] questions = {
+            "What is Java?", "Which company developed Java?"
+        };
+
+        String[][] options = {
+            {"A programming language", "A beverage", "A fruit", "A database"},
+            {"Microsoft", "Sun Microsystems", "Oracle", "Google"}
+        };
+
+        JRadioButton[] option1 = new JRadioButton[2];
+        JRadioButton[] option2 = new JRadioButton[2];
+
+        ButtonGroup group1 = new ButtonGroup();
+        ButtonGroup group2 = new ButtonGroup();
+
+        for (int i = 0; i < questions.length; i++) {
+            quizPanel.add(new JLabel(questions[i]));
+            option1[i] = new JRadioButton(options[i][0]);
+            option2[i] = new JRadioButton(options[i][1]);
+            JRadioButton option3 = new JRadioButton(options[i][2]);
+            JRadioButton option4 = new JRadioButton(options[i][3]);
+
+            group1.add(option1[i]);
+            group2.add(option2[i]);
+
+            quizPanel.add(option1[i]);
+            quizPanel.add(option2[i]);
+            quizPanel.add(option3);
+            quizPanel.add(option4);
+        }
+
+        JButton submitButton = new JButton("Submit Quiz");
+        submitButton.addActionListener(e -> {
+            JOptionPane.showMessageDialog(frame, "Quiz Submitted!");
+            stopTimer();
+            cardLayout.show(panel, "Login"); // Return to login screen
+        });
+
+        quizPanel.add(submitButton);
+
+        panel.add(quizPanel, "Quiz");
+    }
+
+    // Start Quiz and Timer
+    private static void startQuiz() {
+        setupQuizScreen();
+
+        // Timer countdown for auto-submit
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                JOptionPane.showMessageDialog(frame, "Time's up! Submitting quiz.");
+                stopTimer();
+                cardLayout.show(panel, "Login"); // Redirect to login after time's up
+            }
+        }, timeLimit);
+    }
+
+    // Stop Timer
+    private static void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+        }
+    }
+
+    // Handle Logout and Session Close
+    private static void logout() {
+        currentUser = "";
+        cardLayout.show(panel, "Login");
+    }
+}
